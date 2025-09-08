@@ -52,6 +52,11 @@ resource "aws_cloudfront_distribution" "cdn" {
 
     cache_policy_id          = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Managed-CachingOptimized
     origin_request_policy_id = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf" # Managed-CORS-S3Origin
+
+    forwarded_values {
+      query_string = false
+      cookies { forward = "none" }
+    }
   }
 
   # SPA fallback: 403/404 -> index.html (200)
