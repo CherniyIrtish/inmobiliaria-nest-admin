@@ -26,7 +26,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # === Build Vue (корень репо) ===
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
@@ -40,9 +39,7 @@ jobs:
         shell: bash
         run: |
           npm run build
-          # dist/ появится в корне репо
 
-      # === Terraform (в папке infra/) ===
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -50,24 +47,36 @@ jobs:
         working-directory: infra
         run: terraform init -input=false
 
+      - name: Terraform Validate
+        working-directory: infra
+        run: |
+          terraform fmt -check
+          terraform validate
+
       - name: Terraform Apply
         working-directory: infra
-        run: terraform apply -auto-approve -input=false -var="project_name=my-vue"
+        run: |
+          terraform apply -auto-approve \
+            -input=false \
+            -var="project_name=my-vue"
 
       - name: Read outputs
         id: tfout
         working-directory: infra
         shell: bash
         run: |
-          echo "bucket=$(terraform output -raw bucket_name)" >> "$GITHUB_OUTPUT"
-          echo "dist_id=$(terraform output -raw distribution_id)" >> "$GITHUB_OUTPUT"
-          echo "site=$(terraform output -raw website_url)" >> "$GITHUB_OUTPUT"
+          echo "bucket=$(terraform output -raw bucket_name)" \
+            >> "$GITHUB_OUTPUT"
+          echo "dist_id=$(terraform output -raw distribution_id)" \
+            >> "$GITHUB_OUTPUT"
+          echo "site=$(terraform output -raw website_url)" \
+            >> "$GITHUB_OUTPUT"
 
-      # === Upload + Invalidate ===
       - name: Upload assets to S3
         shell: bash
         run: |
-          aws s3 sync ./dist "s3://${{ steps.tfout.outputs.bucket }}" \
+          aws s3 sync ./dist \
+            "s3://${{ steps.tfout.outputs.bucket }}" \
             --delete \
             --exact-timestamps
 
