@@ -2,7 +2,7 @@ name: Deploy SPA to S3+CloudFront
 
 on:
   push:
-    branches: [ main ]
+    branches: ["main"]
   workflow_dispatch:
 
 concurrency:
@@ -30,14 +30,15 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install deps
         run: npm ci
 
       - name: Build
         run: npm run build
+        shell: bash
         # dist/ появится в корне репо
 
       # === Terraform (в папке infra/) ===
@@ -55,10 +56,11 @@ jobs:
       - name: Read outputs
         id: tfout
         working-directory: infra
+        shell: bash
         run: |
-          echo "bucket=$(terraform output -raw bucket_name)" >> $GITHUB_OUTPUT
-          echo "dist_id=$(terraform output -raw distribution_id)" >> $GITHUB_OUTPUT
-          echo "site=$(terraform output -raw website_url)" >> $GITHUB_OUTPUT
+          echo "bucket=$(terraform output -raw bucket_name)" >> "$GITHUB_OUTPUT"
+          echo "dist_id=$(terraform output -raw distribution_id)" >> "$GITHUB_OUTPUT"
+          echo "site=$(terraform output -raw website_url)" >> "$GITHUB_OUTPUT"
 
       # === Upload + Invalidate ===
       - name: Upload assets to S3
