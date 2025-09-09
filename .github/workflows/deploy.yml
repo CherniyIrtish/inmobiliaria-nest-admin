@@ -1,8 +1,8 @@
 name: Deploy SPA to S3+CloudFront
 
-on:
+'on':
   push:
-    branches: ["main"]
+    branches: ['main']
   workflow_dispatch:
 
 concurrency:
@@ -11,7 +11,7 @@ concurrency:
 
 env:
   AWS_DEFAULT_REGION: eu-central-1
-  TF_IN_AUTOMATION: "1"
+  TF_IN_AUTOMATION: true
 
 jobs:
   deploy:
@@ -30,16 +30,17 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install deps
         run: npm ci
 
       - name: Build
-        run: npm run build
         shell: bash
-        # dist/ появится в корне репо
+        run: |
+          npm run build
+          # dist/ появится в корне репо
 
       # === Terraform (в папке infra/) ===
       - name: Setup Terraform
@@ -64,10 +65,20 @@ jobs:
 
       # === Upload + Invalidate ===
       - name: Upload assets to S3
-        run: aws s3 sync ./dist "s3://${{ steps.tfout.outputs.bucket }}" --delete --exact-timestamps
+        shell: bash
+        run: |
+          aws s3 sync ./dist "s3://${{ steps.tfout.outputs.bucket }}" \
+            --delete \
+            --exact-timestamps
 
       - name: Invalidate CloudFront
-        run: aws cloudfront create-invalidation --distribution-id "${{ steps.tfout.outputs.dist_id }}" --paths "/*"
+        shell: bash
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ steps.tfout.outputs.dist_id }}" \
+            --paths "/*"
 
       - name: Print site URL
-        run: echo "Deployed: ${{ steps.tfout.outputs.site }}"
+        shell: bash
+        run: |
+          printf 'Deployed: %s\n' "${{ steps.tfout.outputs.site }}"
