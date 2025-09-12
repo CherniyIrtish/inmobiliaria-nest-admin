@@ -1,165 +1,100 @@
-terraform {
-  required_version = ">= 1.5.0"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-}
+---
+name: Deploy SPA
 
-provider "aws" {
-  region = "eu-central-1"
-}
+# yamllint disable-line rule:truthy
+on:
+  push:
+    branches: ['main']
 
-locals {
-  bucket_name = "${var.project_name}-spa-${random_id.rand.hex}"
-}
+permissions:
+  id-token: write
+  contents: read
 
-resource "random_id" "rand" {
-  byte_length = 4
-}
+env:
+  AWS_REGION: eu-south-2
+  TF_WORKDIR: infra
+  TF_IN_AUTOMATION: 'true'
 
-resource "aws_s3_bucket" "site" {
-  bucket = local.bucket_name
-}
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-resource "aws_s3_bucket_ownership_controls" "site" {
-  bucket = aws_s3_bucket.site.id
-  rule {
-    object_ownership = "BucketOwnerPreferred"
-  }
-}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-resource "aws_s3_bucket_public_access_block" "site" {
-  bucket                  = aws_s3_bucket.site.id
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
 
-resource "aws_s3_bucket_versioning" "site" {
-  bucket = aws_s3_bucket.site.id
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
+      - name: Install deps & build
+        run: |
+          npm ci
+          npm run build
 
-resource "aws_cloudfront_origin_access_control" "oac" {
-  name                              = "${var.project_name}-oac"
-  description                       = "OAC for ${aws_s3_bucket.site.bucket}"
-  origin_access_control_origin_type = "s3"
-  signing_behavior                  = "always"
-  signing_protocol                  = "sigv4"
-}
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
 
-resource "aws_cloudfront_response_headers_policy" "security" {
-  name = "${var.project_name}-security-headers"
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.2
 
-  security_headers_config {
-    content_type_options {
-      override = true
-    }
+      - name: Terraform version
+        run: terraform version
 
-    frame_options {
-      frame_option = "SAMEORIGIN"
-      override     = true
-    }
+      - name: Terraform Init
+        working-directory: ${{ env.TF_WORKDIR }}
+        run: terraform init -upgrade
 
-    referrer_policy {
-      referrer_policy = "strict-origin-when-cross-origin"
-      override        = true
-    }
+      - name: Terraform Apply (S3+CF)
+        working-directory: ${{ env.TF_WORKDIR }}
+        run: terraform apply -auto-approve -lock-timeout=5m
 
-    strict_transport_security {
-      access_control_max_age_sec = 63072000
-      include_subdomains         = true
-      preload                    = true
-      override                   = true
-    }
+      - name: Export Terraform outputs
+        working-directory: ${{ env.TF_WORKDIR }}
+        shell: bash
+        run: |
+          S3=$(terraform output -raw bucket_name)
+          CFID=$(terraform output -raw cloudfront_distribution_id)
+          CFDOM=$(terraform output -raw cloudfront_domain)
+          {
+            echo "S3_BUCKET=$S3"
+            echo "CF_DIST_ID=$CFID"
+            echo "CF_DOMAIN=$CFDOM"
+          } >> "$GITHUB_ENV"
 
-    xss_protection {
-      protection = true
-      mode_block = true
-      override   = true
-    }
-  }
-}
+      - name: Upload static assets (long cache)
+        run: |
+          aws s3 sync dist/ "s3://${{ env.S3_BUCKET }}" \
+            --delete \
+            --exclude index.html \
+            --cache-control 'public, max-age=31536000, immutable'
 
-resource "aws_cloudfront_distribution" "cdn" {
-  enabled             = true
-  comment             = var.project_name
-  default_root_object = "index.html"
+      - name: Upload index.html (no cache)
+        run: |
+          aws s3 cp dist/index.html \
+            "s3://${{ env.S3_BUCKET }}/index.html" \
+            --cache-control 'no-cache, no-store, must-revalidate'
 
-  origins {
-    origin_id                = "s3-origin"
-    domain_name              = aws_s3_bucket.site.bucket_regional_domain_name
-    origin_access_control_id = aws_cloudfront_origin_access_control.oac.id
-  }
+      - name: Wait for CloudFront deployment
+        run: |
+          aws cloudfront wait distribution-deployed \
+            --id "${{ env.CF_DIST_ID }}"
 
-  default_cache_behavior {
-    target_origin_id       = "s3-origin"
-    viewer_protocol_policy = "redirect-to-https"
+      - name: CloudFront invalidation
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ env.CF_DIST_ID }}" \
+            --paths "/*"
 
-    allowed_methods = ["GET", "HEAD", "OPTIONS"]
-    cached_methods  = ["GET", "HEAD"]
-
-    compress = true
-
-    cache_policy_id            = "658327ea-f89d-4fab-a63d-7e88639e58f6"
-    origin_request_policy_id   = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf"
-    response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
-  }
-
-  custom_error_response {
-    error_code            = 403
-    response_code         = 200
-    response_page_path    = "/index.html"
-    error_caching_min_ttl = 0
-  }
-
-  custom_error_response {
-    error_code            = 404
-    response_code         = 200
-    response_page_path    = "/index.html"
-    error_caching_min_ttl = 0
-  }
-
-  restrictions {
-    geo_restriction {
-      restriction_type = "none"
-    }
-  }
-
-  viewer_certificate {
-    cloudfront_default_certificate = true
-    minimum_protocol_version       = "TLSv1.2_2021"
-  }
-}
-
-data "aws_iam_policy_document" "bucket_policy" {
-  statement {
-    sid    = "AllowCloudFrontRead"
-    effect = "Allow"
-
-    principals {
-      type        = "Service"
-      identifiers = ["cloudfront.amazonaws.com"]
-    }
-
-    actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.site.arn}/*"]
-
-    condition {
-      test     = "StringEquals"
-      variable = "AWS:SourceArn"
-      values   = [aws_cloudfront_distribution.cdn.arn]
-    }
-  }
-}
-
-resource "aws_s3_bucket_policy" "site" {
-  bucket = aws_s3_bucket.site.id
-  policy = data.aws_iam_policy_document.bucket_policy.json
-}
+      - name: Echo site URL
+        shell: bash
+        run: |
+          echo "Deployed URL:"
+          echo "https://${CF_DOMAIN}"
