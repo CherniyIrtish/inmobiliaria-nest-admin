@@ -1,5 +1,7 @@
+---
 name: Deploy SPA
 
+# yamllint disable-line rule:truthy
 on:
   push:
     branches: ['main']
@@ -11,6 +13,7 @@ permissions:
 env:
   AWS_REGION: eu-south-2
   TF_WORKDIR: infra
+  TF_IN_AUTOMATION: 'true'
 
 jobs:
   deploy:
@@ -48,15 +51,20 @@ jobs:
 
       - name: Terraform Apply (S3+CF)
         working-directory: ${{ env.TF_WORKDIR }}
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -lock-timeout=5m
 
       - name: Export Terraform outputs
-        id: tfout
         working-directory: ${{ env.TF_WORKDIR }}
+        shell: bash
         run: |
-          echo "S3_BUCKET=$(terraform output -raw bucket_name)" >> $GITHUB_ENV
-          echo "CF_DIST_ID=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_ENV
-          echo "CF_DOMAIN=$(terraform output -raw cloudfront_domain)" >> $GITHUB_ENV
+          S3=$(terraform output -raw bucket_name)
+          CFID=$(terraform output -raw cloudfront_distribution_id)
+          CFDOM=$(terraform output -raw cloudfront_domain)
+          {
+            echo "S3_BUCKET=$S3"
+            echo "CF_DIST_ID=$CFID"
+            echo "CF_DOMAIN=$CFDOM"
+          } >> "$GITHUB_ENV"
 
       - name: Upload static assets (long cache)
         run: |
@@ -64,9 +72,11 @@ jobs:
             --delete \
             --exclude index.html \
             --cache-control 'public, max-age=31536000, immutable'
+
       - name: Upload index.html (no cache)
         run: |
-          aws s3 cp dist/index.html "s3://${{ env.S3_BUCKET }}/index.html" \
+          aws s3 cp dist/index.html \
+            "s3://${{ env.S3_BUCKET }}/index.html" \
             --cache-control 'no-cache, no-store, must-revalidate'
 
       - name: CloudFront invalidation
@@ -76,4 +86,7 @@ jobs:
             --paths "/*"
 
       - name: Echo site URL
-        run: echo "Deployed: https://${{ env.CF_DOMAIN }}"
+        shell: bash
+        run: |
+          echo "Deployed URL:"
+          echo "https://${CF_DOMAIN}"
