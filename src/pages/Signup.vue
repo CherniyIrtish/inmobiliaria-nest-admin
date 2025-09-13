@@ -56,7 +56,7 @@
             <!-- Footer -->
             <div class="pt-5 mt-6 border-t border-gray-100 dark:border-gray-700/60">
               <div class="text-sm">
-                Have an account? <router-link class="font-medium text-violet-500 hover:text-violet-600 dark:hover:text-violet-300" to="/signin">Sign In</router-link>
+                Have an account? <router-link class="font-medium text-violet-500 hover:text-violet-600 dark:hover:text-violet-200" to="/signin">Sign In</router-link>
               </div>
             </div>
           </div>

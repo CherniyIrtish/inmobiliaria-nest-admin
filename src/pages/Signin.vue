@@ -67,7 +67,7 @@
             <!-- Footer -->
             <div class="pt-5 mt-6 border-t border-gray-200 dark:border-gray-700">
               <div class="text-sm">
-                Don’t you have an account? <router-link class="font-medium text-violet-500 hover:text-violet-600 dark:hover:text-violet-300" to="/signup">Sign Up</router-link>
+                Don’t you have an account? <router-link class="font-medium text-violet-500 hover:text-violet-600 dark:hover:text-violet-200" to="/signup">Sign Up</router-link>
               </div>
             </div>
           </div>
