@@ -1,7 +1,6 @@
 terraform {
   required_version = ">= 1.5.0"
 
-  # === Remote backend for Terraform state ===
   backend "s3" {
     bucket         = "tfstate-inmobiliaria-admin-eu-south-2"
     key            = "spa/terraform.tfstate"
@@ -73,7 +72,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "spa" {
 
 # === CloudFront + OAC ===
 resource "aws_cloudfront_origin_access_control" "oac" {
-  name                              = "vue-spa-oac"
+  # уникальное имя, чтобы не конфликтовать с уже существующим OAC
+  name                              = "vue-spa-oac-${random_id.suffix.hex}"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
@@ -127,10 +127,11 @@ resource "aws_cloudfront_distribution" "spa" {
   }
 }
 
+# === Bucket policy: allow CF via OAC ===
 data "aws_iam_policy_document" "s3_oac" {
   statement {
-    sid     = "AllowCloudFrontReadOnlyViaOAC"
-    effect  = "Allow"
+    sid    = "AllowCloudFrontReadOnlyViaOAC"
+    effect = "Allow"
 
     actions   = ["s3:GetObject"]
     resources = ["${aws_s3_bucket.spa.arn}/*"]
