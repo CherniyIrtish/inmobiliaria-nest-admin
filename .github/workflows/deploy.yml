@@ -43,7 +43,10 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.8.5
+          terraform_version: 1.13.2
+
+      - name: Terraform version
+        run: terraform version
 
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKDIR }}
@@ -78,6 +81,11 @@ jobs:
           aws s3 cp dist/index.html \
             "s3://${{ env.S3_BUCKET }}/index.html" \
             --cache-control 'no-cache, no-store, must-revalidate'
+
+      - name: Wait for CloudFront deployment
+        run: |
+          aws cloudfront wait distribution-deployed \
+            --id "${{ env.CF_DIST_ID }}"
 
       - name: CloudFront invalidation
         run: |
