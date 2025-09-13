@@ -1,8 +1,8 @@
 data "aws_iam_policy_document" "s3_oac" {
   statement {
-    sid     = "AllowCloudFrontReadOnlyViaOAC"
-    effect  = "Allow"
-    actions = ["s3:GetObject"]
+    sid       = "AllowCloudFrontReadOnlyViaOAC"
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
     resources = ["${aws_s3_bucket.spa.arn}/*"]
 
     principals {

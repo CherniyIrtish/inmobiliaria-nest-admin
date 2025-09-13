@@ -6,10 +6,10 @@ resource "aws_cloudfront_origin_access_control" "oac" {
 }
 
 resource "aws_cloudfront_distribution" "spa" {
-  enabled               = true
-  comment               = "Vue SPA"
-  price_class           = "PriceClass_100"
-  default_root_object   = "index.html"
+  enabled             = true
+  comment             = "Vue SPA"
+  price_class         = "PriceClass_100"
+  default_root_object = "index.html"
   # (В CI используем ожидание отдельным шагом, поэтому можно оставить поведение по умолчанию здесь)
 
   origin {
@@ -37,6 +37,7 @@ resource "aws_cloudfront_distribution" "spa" {
     response_page_path    = "/index.html"
     error_caching_min_ttl = 0
   }
+
   custom_error_response {
     error_code            = 403
     response_code         = 200
@@ -44,6 +45,11 @@ resource "aws_cloudfront_distribution" "spa" {
     error_caching_min_ttl = 0
   }
 
-  restrictions { geo_restriction { restriction_type = "none" } }
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
   viewer_certificate { cloudfront_default_certificate = true }
 }
