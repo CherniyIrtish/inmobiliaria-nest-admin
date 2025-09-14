@@ -34,6 +34,7 @@ import { useRouter } from 'vue-router';
 import Sidebar from '../partials/Sidebar.vue';
 import Header from '../partials/Header.vue';
 import { http } from '../lib/http';
+import { setAccessToken } from '../utils/auth';
 
 export default {
   name: 'Dashboard',
@@ -46,8 +47,14 @@ export default {
     onMounted(async () => {
       try {
         const me = await http.get('/me');
+
+        if (!me.id || !me.email) {
+          throw new Error('401 unauthorized');
+        }
+
         user.value = me;
       } catch (err) {
+        setAccessToken(null);
         router.push('/signin');
       }
     });
