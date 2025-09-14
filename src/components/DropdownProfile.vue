@@ -2,7 +2,7 @@
   <div class="relative inline-flex">
     <button ref="trigger" class="inline-flex justify-center items-center group" aria-haspopup="true" @click.prevent="dropdownOpen = !dropdownOpen" :aria-expanded="dropdownOpen">
       <div class="flex items-center truncate">
-        <span class="truncate ml-2 text-sm font-medium text-gray-600 dark:text-gray-100 group-hover:text-gray-800 dark:group-hover:text-white">{{ user?.email }}</span>
+        <span class="truncate ml-2 text-sm font-medium text-gray-600 dark:text-gray-100 group-hover:text-gray-800 dark:group-hover:text-white">{{ currentUser?.email }}</span>
         <svg class="w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500" viewBox="0 0 12 12">
           <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
         </svg>
@@ -44,10 +44,10 @@ import UserAvatar from '../images/user-avatar-32.png';
 
 const props = defineProps({
   align: { type: String, default: 'right' },
-  user: { type: Object, default: null },
+  currentUser: { type: Object, default: null },
 });
 
-const { align, user } = toRefs(props);
+const { align, currentUser } = toRefs(props);
 
 const dropdownOpen = ref(false);
 const trigger = ref(null);

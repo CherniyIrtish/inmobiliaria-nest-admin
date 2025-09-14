@@ -33,7 +33,7 @@
         <div class="flex items-center space-x-3">
           <!-- Divider -->
           <hr class="w-px h-6 bg-gray-200 dark:bg-gray-700/60 border-none" />
-          <UserMenu align="right" :user="user" />
+          <UserMenu align="right" :currentUser="currentUser" />
         </div>
       </div>
     </div>
@@ -46,8 +46,8 @@ import UserMenu from '../components/DropdownProfile.vue';
 const props = defineProps({
   sidebarOpen: { type: Boolean, default: false },
   variant: { type: String, default: '' },
-  user: { type: Object, default: null },
+  currentUser: { type: Object, default: null },
 });
 
-const { sidebarOpen, variant, user } = toRefs(props);
+const { sidebarOpen, variant, currentUser } = toRefs(props);
 </script>

@@ -1,5 +1,3 @@
-import { getCookie } from './cookies.js';
-
 export function setAccessToken(token) {
   if (token) localStorage.setItem('accessToken', token);
   else localStorage.removeItem('accessToken');
