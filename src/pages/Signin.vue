@@ -105,8 +105,7 @@ export default {
 
       try {
         const { user, accessToken } = await http.post('/signin', { email: this.email, password: this.password });
-        console.log('user -> ', user);
-        console.log('accessToken -> ', accessToken);
+
         setAccessToken(accessToken);
         this.$router.push(this.$route.query.redirect || '/');
       } catch (err) {
