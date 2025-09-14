@@ -82,7 +82,7 @@
   </main>
 </template>
 <script>
-import { http } from '../lib/http';
+import { http, setAccessToken } from '../lib/http';
 
 export default {
   name: 'Signin',
@@ -104,11 +104,10 @@ export default {
       this.errorMessage = '';
 
       try {
-        const res = await http.post('/signin', {
-          email: this.email,
-          password: this.password,
-        });
-
+        const { user, accessToken } = await http.post('/signin', { email: this.email, password: this.password });
+        console.log('user -> ', user);
+        console.log('accessToken -> ', accessToken);
+        setAccessToken(accessToken);
         this.$router.push(this.$route.query.redirect || '/');
       } catch (err) {
         this.errorMessage = err.message;
