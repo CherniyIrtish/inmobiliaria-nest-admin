@@ -39,7 +39,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, toRefs } from 'vue';
 import { useRouter } from 'vue-router';
-import { http } from '../lib/http';
+import { http, setAccessToken } from '../lib/http';
 import UserAvatar from '../images/user-avatar-32.png';
 
 const props = defineProps({
@@ -81,8 +81,9 @@ onUnmounted(() => {
 async function signOut() {
   try {
     await http.post('/signout');
-  } catch (e) {
+  } catch {
   } finally {
+    setAccessToken(null);
     router.push('/signin');
   }
 }

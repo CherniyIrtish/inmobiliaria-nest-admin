@@ -1,5 +1,14 @@
 import { getCookie } from './cookies.js';
 
+export function setAccessToken(token) {
+  if (token) localStorage.setItem('accessToken', token);
+  else localStorage.removeItem('accessToken');
+}
+
+export function getAccessToken() {
+  return localStorage.getItem('accessToken');
+}
+
 export function isAuthenticated() {
-  return Boolean(getCookie('auth_token'));
+  return !!getAccessToken();
 }
