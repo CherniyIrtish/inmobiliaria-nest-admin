@@ -27,7 +27,6 @@ jobs:
           node-version: 20
           cache: npm
 
-      # ВАЖНО: перед сборкой прокидываем VITE_API_URL из секретов
       - name: Install deps & build (Vite with API URL)
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
