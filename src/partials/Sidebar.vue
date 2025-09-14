@@ -24,13 +24,11 @@
           </svg>
         </button>
         <!-- Logo -->
-        <router-link class="block" to="/">
-          <svg class="fill-violet-500" xmlns="http://www.w3.org/2000/svg" width="32" height="32">
-            <path
-              d="M31.956 14.8C31.372 6.92 25.08.628 17.2.044V5.76a9.04 9.04 0 0 0 9.04 9.04h5.716ZM14.8 26.24v5.716C6.92 31.372.63 25.08.044 17.2H5.76a9.04 9.04 0 0 1 9.04 9.04Zm11.44-9.04h5.716c-.584 7.88-6.876 14.172-14.756 14.756V26.24a9.04 9.04 0 0 1 9.04-9.04ZM.044 14.8C.63 6.92 6.92.628 14.8.044V5.76a9.04 9.04 0 0 1-9.04 9.04H.044Z"
-            />
-          </svg>
-        </router-link>
+        <svg class="fill-violet-500" xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+          <path
+            d="M31.956 14.8C31.372 6.92 25.08.628 17.2.044V5.76a9.04 9.04 0 0 0 9.04 9.04h5.716ZM14.8 26.24v5.716C6.92 31.372.63 25.08.044 17.2H5.76a9.04 9.04 0 0 1 9.04 9.04Zm11.44-9.04h5.716c-.584 7.88-6.876 14.172-14.756 14.756V26.24a9.04 9.04 0 0 1 9.04-9.04ZM.044 14.8C.63 6.92 6.92.628 14.8.044V5.76a9.04 9.04 0 0 1-9.04 9.04H.044Z"
+          />
+        </svg>
       </div>
 
       <!-- Links -->
@@ -42,38 +40,8 @@
             <span class="lg:hidden lg:sidebar-expanded:block 2xl:block">Pages</span>
           </h3>
           <ul class="mt-3">
-            <!-- Inbox -->
-            <router-link to="/inbox" custom v-slot="{ href, navigate, isExactActive }">
-              <li
-                class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r"
-                :class="isExactActive && 'from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]'"
-              >
-                <a
-                  class="block text-gray-800 dark:text-gray-100 truncate transition"
-                  :class="isExactActive ? '' : 'hover:text-gray-900 dark:hover:text-white'"
-                  :href="href"
-                  @click="navigate"
-                >
-                  <div class="flex items-center">
-                    <svg
-                      class="shrink-0 fill-current"
-                      :class="isExactActive ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500'"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                    >
-                      <path
-                        d="M11.92 6.851c.044-.027.09-.05.137-.07.481-.275.758-.68.908-1.256.126-.55.169-.81.357-2.058.075-.498.144-.91.217-1.264-4.122.75-7.087 2.984-9.12 6.284a18.087 18.087 0 0 0-1.985 4.585 17.07 17.07 0 0 0-.354 1.506c-.05.265-.076.448-.086.535a1 1 0 0 1-1.988-.226c.056-.49.209-1.312.502-2.357a20.063 20.063 0 0 1 2.208-5.09C5.31 3.226 9.306.494 14.913.004a1 1 0 0 1 .954 1.494c-.237.414-.375.993-.567 2.267-.197 1.306-.244 1.586-.392 2.235-.285 1.094-.789 1.853-1.552 2.363-.748 3.816-3.976 5.06-8.515 4.326a1 1 0 0 1 .318-1.974c2.954.477 4.918.025 5.808-1.556-.628.085-1.335.121-2.127.121a1 1 0 1 1 0-2c1.458 0 2.434-.116 3.08-.429Z"
-                      />
-                    </svg>
-                    <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Inbox</span>
-                  </div>
-                </a>
-              </li>
-            </router-link>
-            <!-- Calendar -->
-            <router-link to="/calendar" custom v-slot="{ href, navigate, isExactActive }">
+            <!-- Users -->
+            <router-link to="/users" custom v-slot="{ href, navigate, isExactActive }">
               <li
                 class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r"
                 :class="isExactActive && 'from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]'"
@@ -97,7 +65,37 @@
                       <path d="M4 0a4 4 0 0 0-4 4v8a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4V4a4 4 0 0 0-4-4H4ZM2 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4Z" />
                       <path d="M4 0a4 4 0 0 0-4 4v8a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4V4a4 4 0 0 0-4-4H4ZM2 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4Z" />
                     </svg>
-                    <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Calendar</span>
+                    <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Users</span>
+                  </div>
+                </a>
+              </li>
+            </router-link>
+            <!-- Listings -->
+            <router-link to="/listings" custom v-slot="{ href, navigate, isExactActive }">
+              <li
+                class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r"
+                :class="isExactActive && 'from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]'"
+              >
+                <a
+                  class="block text-gray-800 dark:text-gray-100 truncate transition"
+                  :class="isExactActive ? '' : 'hover:text-gray-900 dark:hover:text-white'"
+                  :href="href"
+                  @click="navigate"
+                >
+                  <div class="flex items-center">
+                    <svg
+                      class="shrink-0 fill-current"
+                      :class="isExactActive ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500'"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M11.92 6.851c.044-.027.09-.05.137-.07.481-.275.758-.68.908-1.256.126-.55.169-.81.357-2.058.075-.498.144-.91.217-1.264-4.122.75-7.087 2.984-9.12 6.284a18.087 18.087 0 0 0-1.985 4.585 17.07 17.07 0 0 0-.354 1.506c-.05.265-.076.448-.086.535a1 1 0 0 1-1.988-.226c.056-.49.209-1.312.502-2.357a20.063 20.063 0 0 1 2.208-5.09C5.31 3.226 9.306.494 14.913.004a1 1 0 0 1 .954 1.494c-.237.414-.375.993-.567 2.267-.197 1.306-.244 1.586-.392 2.235-.285 1.094-.789 1.853-1.552 2.363-.748 3.816-3.976 5.06-8.515 4.326a1 1 0 0 1 .318-1.974c2.954.477 4.918.025 5.808-1.556-.628.085-1.335.121-2.127.121a1 1 0 1 1 0-2c1.458 0 2.434-.116 3.08-.429Z"
+                      />
+                    </svg>
+                    <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Listings</span>
                   </div>
                 </a>
               </li>
@@ -128,24 +126,79 @@
     </div>
   </div>
 </template>
+<script setup>
+import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
+const props = defineProps({
+  sidebarOpen: { type: Boolean, required: true },
+  variant: { type: String, default: '' },
+  user: { type: Object, default: null },
+});
+
+const emit = defineEmits(['close-sidebar']);
+
+const trigger = ref(null);
+const sidebar = ref(null);
+
+const stored = localStorage.getItem('sidebar-expanded');
+const sidebarExpanded = ref(stored === null ? false : stored === 'true');
+
+const route = useRoute();
+const currentRoute = route;
+
+// close on click outside
+const clickHandler = ({ target }) => {
+  if (!sidebar.value || !trigger.value) return;
+  if (!props.sidebarOpen) return;
+  if (sidebar.value.contains(target) || trigger.value.contains(target)) return;
+  emit('close-sidebar');
+};
+
+// close on ESC
+const keyHandler = (e) => {
+  if (!props.sidebarOpen || e.key !== 'Escape') return;
+  emit('close-sidebar');
+};
+
+onMounted(() => {
+  document.addEventListener('click', clickHandler);
+  document.addEventListener('keydown', keyHandler);
+
+  if (sidebarExpanded.value) {
+    document.body.classList.add('sidebar-expanded');
+  }
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', clickHandler);
+  document.removeEventListener('keydown', keyHandler);
+});
+
+watch(sidebarExpanded, (val) => {
+  localStorage.setItem('sidebar-expanded', String(val));
+  document.body.classList.toggle('sidebar-expanded', val);
+});
+</script>
+<!-- 
 <script>
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 export default {
   name: 'Sidebar',
-  props: ['sidebarOpen', 'variant'],
+  props: ['sidebarOpen', 'variant', 'user'],
   components: {},
   setup(props, { emit }) {
     const trigger = ref(null);
     const sidebar = ref(null);
-
     const storedSidebarExpanded = localStorage.getItem('sidebar-expanded');
     const sidebarExpanded = ref(storedSidebarExpanded === null ? false : storedSidebarExpanded === 'true');
 
     const currentRoute = useRouter().currentRoute.value;
 
+    console.log('SIDE_BAR_PROPDS -> ', props);
+    debugger;
     // close on click outside
     const clickHandler = ({ target }) => {
       if (!sidebar.value || !trigger.value) return;
@@ -186,4 +239,4 @@ export default {
     };
   },
 };
-</script>
+</script> -->

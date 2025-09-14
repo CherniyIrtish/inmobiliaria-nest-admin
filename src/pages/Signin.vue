@@ -82,6 +82,7 @@
   </main>
 </template>
 <script>
+import { getCurrentUser, initAuth } from '../lib/auth-state';
 import { http, setAccessToken } from '../lib/http';
 
 export default {
@@ -95,8 +96,17 @@ export default {
   },
   async mounted() {
     try {
-      await http.get('/me');
-      this.$router.push('/');
+      const user = await http.get('/me');
+
+      if (!user.id || !user.email) {
+        throw new Error('401 unauthorized');
+      }
+
+      if (user.admin) {
+        this.$router.push({ name: 'users', state: { user } });
+      } else {
+        this.$router.push({ name: 'listings', state: { user } });
+      }
     } catch (e) {}
   },
   methods: {
@@ -107,7 +117,9 @@ export default {
         const { user, accessToken } = await http.post('/signin', { email: this.email, password: this.password });
 
         setAccessToken(accessToken);
-        this.$router.push(this.$route.query.redirect || '/');
+        await initAuth();
+
+        this.$router.push(this.$route.query.redirect || (user?.admin ? { name: 'users' } : { name: 'listings' }));
       } catch (err) {
         this.errorMessage = err.message;
       }
