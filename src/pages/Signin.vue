@@ -117,7 +117,7 @@ export default {
         const { user, accessToken } = await http.post('/signin', { email: this.email, password: this.password });
 
         setAccessToken(accessToken);
-        await initAuth();
+        await initAuth(true);
 
         this.$router.push(this.$route.query.redirect || (user?.admin ? { name: 'users' } : { name: 'listings' }));
       } catch (err) {

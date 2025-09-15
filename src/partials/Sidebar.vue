@@ -41,7 +41,7 @@
           </h3>
           <ul class="mt-3">
             <!-- Users -->
-            <router-link to="/users" custom v-slot="{ href, navigate, isExactActive }">
+            <router-link v-if="props.currentUser?.admin" to="/users" custom v-slot="{ href, navigate, isExactActive }">
               <li
                 class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r"
                 :class="isExactActive && 'from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]'"
@@ -71,7 +71,7 @@
               </li>
             </router-link>
             <!-- Listings -->
-            <router-link to="/listings" custom v-slot="{ href, navigate, isExactActive }">
+            <router-link v-if="!props.currentUser?.admin" to="/listings" custom v-slot="{ href, navigate, isExactActive }">
               <li
                 class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r"
                 :class="isExactActive && 'from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]'"
@@ -133,17 +133,13 @@ import { useRoute } from 'vue-router';
 const props = defineProps({
   sidebarOpen: { type: Boolean, required: true },
   variant: { type: String, default: '' },
-  user: { type: Object, default: null },
+  currentUser: { type: Object, default: null },
 });
-
 const emit = defineEmits(['close-sidebar']);
-
 const trigger = ref(null);
 const sidebar = ref(null);
-
 const stored = localStorage.getItem('sidebar-expanded');
 const sidebarExpanded = ref(stored === null ? false : stored === 'true');
-
 const route = useRoute();
 const currentRoute = route;
 

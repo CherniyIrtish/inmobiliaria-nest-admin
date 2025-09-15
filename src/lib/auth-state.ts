@@ -1,7 +1,7 @@
 import { isAuthenticated } from '../utils/auth';
 import { http, setAccessToken } from './http';
 
-type CurrentUser = { id: number; email: string; admin: boolean };
+export type CurrentUser = { id: number; email: string; admin: boolean };
 
 let currentUser: CurrentUser | null = null;
 let initialized = false;
@@ -15,9 +15,17 @@ export function isInitDone() {
     return initialized;
 }
 
-export async function initAuth(): Promise<void> {
-    if (initialized) return;
-    if (initPromise) return initPromise;
+export async function initAuth(force = false): Promise<CurrentUser | null> {
+    if (force) {
+        initialized = false;
+        initPromise = null;
+    }
+
+    if (initialized) return currentUser;
+    if (initPromise) {
+        await initPromise;
+        return currentUser;
+    }
 
     initPromise = (async () => {
         try {
@@ -35,10 +43,11 @@ export async function initAuth(): Promise<void> {
         }
     })();
 
-    return initPromise;
+    await initPromise;
+    return currentUser;
 }
 
-export function setMe(next: CurrentUser | null) {
+export function setCurrentUser(next: CurrentUser | null) {
     currentUser = next;
 }
 
