@@ -1,6 +1,12 @@
 <template>
   <div class="relative inline-flex">
-    <button ref="trigger" class="inline-flex justify-center items-center group" aria-haspopup="true" @click.prevent="dropdownOpen = !dropdownOpen" :aria-expanded="dropdownOpen">
+    <button
+      ref="trigger"
+      class="inline-flex justify-center items-center group cursor-pointer"
+      aria-haspopup="true"
+      @click.prevent="dropdownOpen = !dropdownOpen"
+      :aria-expanded="dropdownOpen"
+    >
       <div class="flex items-center truncate">
         <span class="truncate ml-2 text-sm font-medium text-gray-600 dark:text-gray-100 group-hover:text-gray-800 dark:group-hover:text-white">{{ currentUser?.email }}</span>
         <svg class="w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500" viewBox="0 0 12 12">
@@ -8,6 +14,7 @@
         </svg>
       </div>
     </button>
+
     <transition
       enter-active-class="transition ease-out duration-200 transform"
       enter-from-class="opacity-0 -translate-y-2"
@@ -41,6 +48,7 @@ import { ref, onMounted, onUnmounted, toRefs } from 'vue';
 import { useRouter } from 'vue-router';
 import { http, setAccessToken } from '../lib/http';
 import UserAvatar from '../images/user-avatar-32.png';
+import { clearAuth } from '../lib/auth-state';
 
 const props = defineProps({
   align: { type: String, default: 'right' },
@@ -83,7 +91,7 @@ async function signOut() {
     await http.post('/signout');
   } catch {
   } finally {
-    setAccessToken(null);
+    clearAuth();
     router.push('/signin');
   }
 }
