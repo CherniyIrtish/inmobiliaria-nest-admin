@@ -15,7 +15,7 @@
             <div class="lg:mx-auto">
               <!-- Cart items -->
               <div class="mb-6 lg:mb-0">
-                <Accordion title="Listing">
+                <Accordion title="Listing" :formToggle="formToggle" v-on:form-toggle-handle="formToggleHandle($event)">
                   <div>
                     <form>
                       <div class="space-y-4">
@@ -48,11 +48,11 @@
                           </div>
 
                           <div class="flex-1">
-                            <label class="block text-sm font-medium mb-1" for="card-bedrooms">Bedrooms <span class="text-red-500">*</span></label>
-                            <select id="card-bedrooms" class="form-select w-full" v-model.number="form.bedrooms">
-                              <option>1</option>
-                              <option>2</option>
-                              <option>3+</option>
+                            <label class="block text-sm font-medium mb-1" for="card-bedrooms">Bedrooms<span class="text-red-500">*</span></label>
+                            <select id="card-bedrooms" class="form-select w-full" v-model="form.bedrooms">
+                              <option :value="1">1</option>
+                              <option :value="2">2</option>
+                              <option :value="3">3+</option>
                             </select>
                           </div>
                         </div>
@@ -60,10 +60,18 @@
                         <div class="text-right">
                           <button
                             type="button"
-                            class="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white px-4 cursor-pointer"
+                            class="btn bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-gray-800 dark:text-gray-300 cursor-pointer ml-3 first:ml-0"
+                            @click="closeForm()"
+                          >
+                            Close
+                          </button>
+
+                          <button
+                            type="button"
+                            class="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white px-4 cursor-pointer ml-3 first:ml-0"
                             @click="listApartment()"
                           >
-                            List Apartment
+                            {{ form.id ? 'Save Changes' : 'List Apartment' }}
                           </button>
                         </div>
                       </div>
@@ -94,7 +102,7 @@
                         </th>
 
                         <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                          <div class="font-semibold text-center">Area</div>
+                          <div class="font-semibold text-center">Bedrooms</div>
                         </th>
 
                         <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
@@ -124,11 +132,11 @@
                         </td>
 
                         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                          <div class="text-center">{{ listing.area }}</div>
+                          <div class="text-center">{{ listing.bedrooms }}</div>
                         </td>
 
                         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                          <div class="text-center">{{ listing.price }}</div>
+                          <div class="text-center">{{ listing.price }} $</div>
                         </td>
 
                         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
@@ -137,7 +145,7 @@
 
                         <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
                           <div class="space-x-1">
-                            <button class="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 rounded-full cursor-pointer" @click="editListing()">
+                            <button class="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 rounded-full cursor-pointer" @click="editListing(listing)">
                               <span class="sr-only">Edit</span>
                               <svg class="w-8 h-8 fill-current" viewBox="0 0 32 32">
                                 <path
@@ -167,7 +175,7 @@
     </div>
   </div>
 </template>
-<script setup>
+<script setup lang="ts">
 import Sidebar from '../partials/Sidebar.vue';
 import Header from '../partials/Header.vue';
 import Accordion from '../partials/Accordion.vue';
@@ -178,8 +186,9 @@ import { http } from '../lib/http';
 const sidebarOpen = ref(false);
 const listings = ref([]);
 const currentUser = getCurrentUser();
-const form = reactive({ title: '', description: '', area: null, price: null, bedrooms: 1 });
+const form = reactive({ id: null, title: '', description: '', area: null, price: null, bedrooms: 1 });
 const fieldErrors = reactive({ title: '', area: '', price: '' });
+const formToggle = ref(false);
 
 onMounted(async () => await getListings());
 
@@ -192,6 +201,7 @@ async function getListings() {
 }
 
 function resetForm() {
+  form.id = null;
   form.title = '';
   form.description = '';
   form.area = null;
@@ -211,21 +221,33 @@ async function listApartment() {
       bedrooms: Number(form.bedrooms),
     };
 
-    await http.post('/listings', payload);
+    if (!form.id) {
+      await http.post('/listings', payload);
+    } else {
+      await http.patch(`/listings/${form.id}`, payload);
+    }
 
     resetForm();
   } catch (e) {
     console.error(e);
   } finally {
     await getListings();
+    formToggle.value = false;
   }
 }
 
-function editListing() {
-  console.log('editListing ');
+function editListing(listing: any) {
+  formToggle.value = true;
+
+  form.id = listing.id;
+  form.title = listing.title;
+  form.description = listing.description;
+  form.area = listing.area;
+  form.price = listing.price;
+  form.bedrooms = listing.bedrooms;
 }
 
-async function deleteListing(id) {
+async function deleteListing(id: number) {
   try {
     await http.delete(`/listings/${id}`);
   } catch (e) {
@@ -241,5 +263,16 @@ function validate() {
   fieldErrors.price = form.price != null && Number(form.price) >= 0 ? '' : 'Price must be 0 or more';
 
   return !Object.values(fieldErrors).some(Boolean);
+}
+
+function closeForm() {
+  resetForm();
+  formToggle.value = false;
+}
+
+function formToggleHandle(toggle: boolean) {
+  if (toggle) resetForm();
+
+  formToggle.value = !toggle;
 }
 </script>

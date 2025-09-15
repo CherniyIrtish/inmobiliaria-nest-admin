@@ -28,9 +28,7 @@
               <div class="overflow-x-auto">
                 <table class="table-auto w-full dark:text-gray-300">
                   <!-- Table header -->
-                  <thead
-                    class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20 border-t border-b border-gray-100 dark:border-gray-700/60"
-                  >
+                  <thead class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20 border-b border-gray-100 dark:border-gray-700/60">
                     <tr>
                       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
                         <div class="font-semibold text-left">Email</div>
@@ -47,7 +45,16 @@
                   </thead>
                   <!-- Table body -->
                   <tbody class="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
-                    <UsersTableItem v-for="user in users" :key="user.id" :user="user" :value="user.id" @deleteUser="deleteUser($event)" />
+                    <UsersTableItem
+                      v-for="user in users"
+                      :key="user.id"
+                      :user="user"
+                      :value="user.id"
+                      :listingToggle="listingsOfUserId === user.id"
+                      @deleteUser="deleteUser($event)"
+                      @listingsToggleHandle="listingsToggle($event)"
+                      @approveListing="approveListing($event)"
+                    />
                   </tbody>
                 </table>
               </div>
@@ -60,7 +67,6 @@
 </template>
 <script setup>
 import { onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import Sidebar from '../partials/Sidebar.vue';
 import Header from '../partials/Header.vue';
 import { http } from '../lib/http';
@@ -70,6 +76,7 @@ import UsersTableItem from '../components/UsersTableItem.vue';
 const sidebarOpen = ref(false);
 const currentUser = getCurrentUser();
 const users = ref([]);
+const listingsOfUserId = ref(null);
 
 onMounted(async () => {
   await getUsers();
@@ -89,6 +96,23 @@ async function deleteUser(user) {
     await getUsers();
   } catch (err) {
     console.error(err);
+  }
+}
+
+function listingsToggle(user) {
+  if (listingsOfUserId.value === user.id) {
+    listingsOfUserId.value = null;
+    return;
+  }
+
+  listingsOfUserId.value = user.id;
+}
+
+async function approveListing({ listingId, approved }) {
+  try {
+    await http.patch(`/listings/${listingId}`, { approved });
+  } finally {
+    await getUsers();
   }
 }
 </script>
