@@ -128,7 +128,6 @@
 </template>
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
 
 const props = defineProps({
   sidebarOpen: { type: Boolean, required: true },
@@ -140,8 +139,6 @@ const trigger = ref(null);
 const sidebar = ref(null);
 const stored = localStorage.getItem('sidebar-expanded');
 const sidebarExpanded = ref(stored === null ? false : stored === 'true');
-const route = useRoute();
-const currentRoute = route;
 
 // close on click outside
 const clickHandler = ({ target }) => {
@@ -176,63 +173,3 @@ watch(sidebarExpanded, (val) => {
   document.body.classList.toggle('sidebar-expanded', val);
 });
 </script>
-<!-- 
-<script>
-import { ref, onMounted, onUnmounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
-
-export default {
-  name: 'Sidebar',
-  props: ['sidebarOpen', 'variant', 'user'],
-  components: {},
-  setup(props, { emit }) {
-    const trigger = ref(null);
-    const sidebar = ref(null);
-    const storedSidebarExpanded = localStorage.getItem('sidebar-expanded');
-    const sidebarExpanded = ref(storedSidebarExpanded === null ? false : storedSidebarExpanded === 'true');
-
-    const currentRoute = useRouter().currentRoute.value;
-
-    console.log('SIDE_BAR_PROPDS -> ', props);
-    debugger;
-    // close on click outside
-    const clickHandler = ({ target }) => {
-      if (!sidebar.value || !trigger.value) return;
-      if (!props.sidebarOpen || sidebar.value.contains(target) || trigger.value.contains(target)) return;
-      emit('close-sidebar');
-    };
-
-    // close if the esc key is pressed
-    const keyHandler = ({ keyCode }) => {
-      if (!props.sidebarOpen || keyCode !== 27) return;
-      emit('close-sidebar');
-    };
-
-    onMounted(() => {
-      document.addEventListener('click', clickHandler);
-      document.addEventListener('keydown', keyHandler);
-    });
-
-    onUnmounted(() => {
-      document.removeEventListener('click', clickHandler);
-      document.removeEventListener('keydown', keyHandler);
-    });
-
-    watch(sidebarExpanded, () => {
-      localStorage.setItem('sidebar-expanded', sidebarExpanded.value);
-      if (sidebarExpanded.value) {
-        document.querySelector('body').classList.add('sidebar-expanded');
-      } else {
-        document.querySelector('body').classList.remove('sidebar-expanded');
-      }
-    });
-
-    return {
-      trigger,
-      sidebar,
-      sidebarExpanded,
-      currentRoute,
-    };
-  },
-};
-</script> -->

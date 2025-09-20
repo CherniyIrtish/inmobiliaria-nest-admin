@@ -27,6 +27,13 @@
               <!-- Table -->
               <div class="overflow-x-auto">
                 <table class="table-auto w-full dark:text-gray-300">
+                  <colgroup>
+                    <col />
+                    <col class="w-24" />
+                    <col class="w-24" />
+                    <col class="w-36" />
+                  </colgroup>
+
                   <!-- Table header -->
                   <thead class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20 border-b border-gray-100 dark:border-gray-700/60">
                     <tr>
@@ -36,6 +43,14 @@
 
                       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
                         <div class="font-semibold">Listings</div>
+                      </th>
+
+                      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                        <div class="font-semibold">Require 2FA</div>
+                      </th>
+
+                      <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+                        <div class="font-semibold">2FA Status</div>
                       </th>
 
                       <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
@@ -54,6 +69,7 @@
                       @deleteUser="deleteUser($event)"
                       @listingsToggleHandle="listingsToggle($event)"
                       @approveListing="approveListing($event)"
+                      @totpToggle="totpToggle(user, $event)"
                     />
                   </tbody>
                 </table>
@@ -111,6 +127,14 @@ function listingsToggle(user) {
 async function approveListing({ listingId, approved }) {
   try {
     await http.patch(`/listings/${listingId}`, { approved });
+  } finally {
+    await getUsers();
+  }
+}
+
+async function totpToggle(user, totpRequired) {
+  try {
+    await http.patch(`/users/${user.id}/2fa/require`, { totpRequired: !totpRequired });
   } finally {
     await getUsers();
   }

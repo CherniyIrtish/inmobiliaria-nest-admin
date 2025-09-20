@@ -8,6 +8,25 @@
       <div class="text-center">{{ user.listings.length }}</div>
     </td>
 
+    <td>
+      <div class="flex justify-center">
+        <label class="inline-flex cursor-pointer">
+          <span class="sr-only">Select</span>
+          <input :id="user.id" class="form-checkbox cursor-pointer" type="checkbox" @change="totpToggle()" :checked="user.totpRequired" />
+        </label>
+      </div>
+    </td>
+
+    <td>
+      <div v-if="user.totpEnabled" class="flex justify-center" aria-hidden="true">
+        <div class="relative inline-flex rounded-full w-1.5 h-1.5 bg-green-500"></div>
+      </div>
+
+      <div v-if="!user.totpEnabled" class="flex justify-center" aria-hidden="true">
+        <div class="relative inline-flex rounded-full w-1.5 h-1.5 bg-red-500"></div>
+      </div>
+    </td>
+
     <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
       <div class="space-x-1 text-center">
         <button class="text-red-500 hover:text-red-600 rounded-full rounded-full cursor-pointer" @click="deleteUser()">
@@ -35,7 +54,7 @@
     </td>
   </tr>
 
-  <tr v-show="listingToggle" class="bg-yellow-500 text-grey-100 dark:bg-yellow-500/20 dark:text-grey-800">
+  <tr v-show="listingToggle" class="bg-linear-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04] text-grey-100 dark:text-grey-800">
     <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
       <div class="font-semibold text-left">Title</div>
     </th>
@@ -44,12 +63,20 @@
       <div class="font-semibold text-center">Price</div>
     </th>
 
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"></th>
+    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"></th>
+
     <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
       <div class="font-semibold text-center">Approve</div>
     </th>
   </tr>
 
-  <tr v-show="listingToggle" class="text-xs bg-green-500 text-grey-100 dark:bg-green-500/20 dark:text-grey-800" v-for="listing in user.listings" :key="listing.id">
+  <tr
+    v-show="listingToggle"
+    class="bg-linear-to-r from-green-500/[0.12] dark:from-green-500/[0.24] to-green-500/[0.04] text-xs text-grey-100 dark:text-grey-800"
+    v-for="listing in user.listings"
+    :key="listing.id"
+  >
     <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
       <div class="text-left">{{ listing.title }}</div>
     </td>
@@ -57,6 +84,9 @@
     <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
       <div class="text-center">{{ listing.price }}</div>
     </td>
+
+    <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"></td>
+    <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"></td>
 
     <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
       <div class="flex justify-center">
@@ -70,7 +100,7 @@
 </template>
 <script setup lang="ts">
 const props = defineProps<{ user: any; value: any; selected?: any[]; listingToggle: boolean }>();
-const emit = defineEmits(['delete-user', 'listings-toggle-handle', 'approve-listing']);
+const emit = defineEmits(['delete-user', 'listings-toggle-handle', 'approve-listing', 'totp-toggle']);
 
 function deleteUser() {
   emit('delete-user', props.user);
@@ -82,5 +112,9 @@ function listingsToggle() {
 
 function listingApprovigToggle(listing: any) {
   emit('approve-listing', { listingId: listing.id, approved: !listing.approved });
+}
+
+function totpToggle() {
+  emit('totp-toggle', props.user.totpRequired);
 }
 </script>

@@ -29,9 +29,10 @@
           </div>
 
           <div class="max-w-sm mx-auto w-full px-4 py-8">
-            <h1 class="text-3xl text-gray-800 dark:text-gray-100 font-bold mb-6">Welcome back!</h1>
+            <h1 v-if="signinMode === 'form'" class="text-3xl text-gray-800 dark:text-gray-100 font-bold mb-6">Welcome back!</h1>
+
             <!-- Form -->
-            <form @submit.prevent="onSubmit">
+            <form v-if="signinMode === 'form'" @submit.prevent="onSubmit">
               <div class="space-y-4">
                 <div>
                   <label class="block text-sm font-medium mb-1" for="email">Email Address</label>
@@ -64,6 +65,75 @@
                 </button>
               </div>
             </form>
+
+            <!-- TOTP Setup -->
+            <div v-if="signinMode === 'mfaEnrollRequired'" class="space-y-4">
+              <div class="flex justify-center">
+                <img :src="qrUrl" alt="2FA QR" class="w-56 h-56 border rounded" />
+              </div>
+              <p class="text-sm text-gray-600 dark:text-gray-300">Scan the QR code with your authenticator app (e.g., Google Authenticator) and enter the 6-digit code below</p>
+
+              <form @submit.prevent="verifyCode" class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium mb-1" for="totp">Authentication code</label>
+                  <input
+                    id="totp"
+                    v-model="code"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                    maxlength="6"
+                    placeholder="______"
+                    class="form-input w-full tracking-widest text-center"
+                    required
+                  />
+                </div>
+
+                <p v-if="errorMessage" class="text-red-600 text-sm">{{ errorMessage }}</p>
+
+                <div class="flex items-center justify-end">
+                  <button
+                    type="submit"
+                    :disabled="verifying"
+                    class="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white whitespace-nowrap ml-3 cursor-pointer disabled:opacity-60"
+                  >
+                    {{ verifying ? 'Verifying…' : 'Confirm' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- mfa -->
+
+            <div v-if="signinMode === 'mfaRequired'" class="space-y-4">
+              <form @submit.prevent="verifyCode" class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium mb-1" for="totp">Authentication code</label>
+                  <input
+                    id="totp"
+                    v-model="code"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                    maxlength="6"
+                    placeholder="______"
+                    class="form-input w-full tracking-widest text-center"
+                    required
+                  />
+                </div>
+
+                <p v-if="errorMessage" class="text-red-600 text-sm">{{ errorMessage }}</p>
+
+                <div class="flex items-center justify-end">
+                  <button
+                    type="submit"
+                    :disabled="verifying"
+                    class="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white whitespace-nowrap ml-3 cursor-pointer disabled:opacity-60"
+                  >
+                    {{ verifying ? 'Verifying…' : 'Confirm' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+
             <!-- Footer -->
             <div class="pt-5 mt-6 border-t border-gray-200 dark:border-gray-700">
               <div class="text-sm">
@@ -81,49 +151,94 @@
     </div>
   </main>
 </template>
-<script>
-import { getCurrentUser, initAuth } from '../lib/auth-state';
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { initAuth } from '../lib/auth-state';
 import { http, setAccessToken } from '../lib/http';
 
-export default {
-  name: 'Signin',
-  data() {
-    return {
-      email: '',
-      password: '',
-      errorMessage: '',
-    };
-  },
-  async mounted() {
-    try {
-      const user = await http.get('/me');
+defineOptions({ name: 'Signin' });
 
-      if (!user.id || !user.email) {
-        throw new Error('401 unauthorized');
-      }
+const router = useRouter();
+const route = useRoute();
 
-      if (user.admin) {
-        this.$router.push({ name: 'users', state: { user } });
-      } else {
-        this.$router.push({ name: 'listings', state: { user } });
-      }
-    } catch (e) {}
-  },
-  methods: {
-    async onSubmit() {
-      this.errorMessage = '';
+const email = ref('');
+const password = ref('');
+const errorMessage = ref('');
+const qrUrl = ref('');
+const code = ref('');
+const verifying = ref(false);
+const signinMode = ref('form'); // form, mfaEnrollRequired, mfaRequired
 
-      try {
-        const { user, accessToken } = await http.post('/signin', { email: this.email, password: this.password });
+onMounted(async () => {
+  try {
+    const user = await http.get('/me');
 
-        setAccessToken(accessToken);
-        await initAuth(true);
+    if (!user.id || !user.email) {
+      throw new Error('401 unauthorized');
+    }
 
-        this.$router.push(this.$route.query.redirect || (user?.admin ? { name: 'users' } : { name: 'listings' }));
-      } catch (err) {
-        this.errorMessage = err.message;
-      }
-    },
-  },
-};
+    if (user.admin) {
+      router.push({ name: 'users', state: { user } });
+    } else {
+      router.push({ name: 'listings', state: { user } });
+    }
+  } catch (e) {}
+});
+
+async function onSubmit() {
+  errorMessage.value = '';
+
+  try {
+    const signinRes: any = await http.post('/signin', { email: email.value, password: password.value });
+
+    if (signinRes.user && signinRes.accessToken) {
+      setAccessToken(signinRes.accessToken);
+      await initAuth(true);
+
+      router.push(route.query.redirect || (signinRes.user?.admin ? { name: 'users' } : { name: 'listings' }));
+      return;
+    }
+
+    if (signinRes.mfaEnrollRequired) {
+      signinMode.value = 'mfaEnrollRequired';
+      const { preauthToken } = signinRes;
+
+      setAccessToken(preauthToken);
+
+      const twoFARes = await http.post('2fa/setup', {});
+      const { qrDataUrl } = twoFARes;
+
+      qrUrl.value = qrDataUrl;
+
+      return;
+    }
+
+    if (signinRes.mfaRequired) {
+      const { preauthToken } = signinRes;
+
+      signinMode.value = 'mfaRequired';
+
+      setAccessToken(preauthToken);
+    }
+  } catch (err) {
+    errorMessage.value = err.message;
+  }
+}
+
+async function verifyCode() {
+  try {
+    const verifyRes: any = await http.post('/2fa/verify', { code: code.value });
+
+    if (verifyRes.user && verifyRes.accessToken) {
+      setAccessToken(verifyRes.accessToken);
+      await initAuth(true);
+
+      router.push(route.query.redirect || (verifyRes.user?.admin ? { name: 'users' } : { name: 'listings' }));
+      return;
+    }
+  } catch (err) {
+    errorMessage.value = err.message;
+  }
+}
 </script>

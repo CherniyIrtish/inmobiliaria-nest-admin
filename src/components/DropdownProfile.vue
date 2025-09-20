@@ -46,8 +46,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, toRefs } from 'vue';
 import { useRouter } from 'vue-router';
-import { http, setAccessToken } from '../lib/http';
-import UserAvatar from '../images/user-avatar-32.png';
+import { http } from '../lib/http';
 import { clearAuth } from '../lib/auth-state';
 
 const props = defineProps({

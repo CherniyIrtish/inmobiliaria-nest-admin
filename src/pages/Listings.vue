@@ -87,7 +87,7 @@
                 </header>
 
                 <!-- Table -->
-                <div class="overflow-x-auto bg-white dark:bg-gray-800 shadow-xs rounded-xl">
+                <div v-if="listings.length" class="overflow-x-auto bg-white dark:bg-gray-800 shadow-xs rounded-xl">
                   <table class="table-fixed w-full dark:text-gray-300">
                     <thead
                       class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20 border-t border-b border-gray-100 dark:border-gray-700/60"
@@ -143,7 +143,7 @@
                           <div class="text-center">{{ listing.approved }}</div>
                         </td>
 
-                        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
+                        <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px text-center">
                           <div class="space-x-1">
                             <button class="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 rounded-full cursor-pointer" @click="editListing(listing)">
                               <span class="sr-only">Edit</span>
@@ -167,6 +167,8 @@
                     </tbody>
                   </table>
                 </div>
+
+                <div v-if="!listings.length">No Listings Yet</div>
               </div>
             </div>
           </div>
